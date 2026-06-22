@@ -40,7 +40,11 @@ cd obsidian-knowledge-bases
 
 [![下载 ZIP](https://img.shields.io/badge/下载-ZIP-brightgreen?style=for-the-badge)](https://github.com/mochenxin2025-png/obsidian-knowledge-bases/archive/refs/heads/main.zip)
 
-### 方式三：Hermes CLI
+### 方式三：下载 .7z（最新 Release）
+
+[![下载 .7z](https://img.shields.io/badge/下载-.7z-orange?style=for-the-badge)](https://github.com/mochenxin2025-png/obsidian-knowledge-bases/releases/latest/download/obsidian-knowledge-bases.7z)
+
+### 方式四：Hermes CLI
 
 ```bash
 hermes skills install video-to-obsidian

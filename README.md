@@ -40,7 +40,11 @@ cd obsidian-knowledge-bases
 
 [![Download ZIP](https://img.shields.io/badge/Download-ZIP-brightgreen?style=for-the-badge)](https://github.com/mochenxin2025-png/obsidian-knowledge-bases/archive/refs/heads/main.zip)
 
-### Option 3: Hermes CLI
+### Option 3: Download .7z (Latest Release)
+
+[![Download .7z](https://img.shields.io/badge/Download-.7z-orange?style=for-the-badge)](https://github.com/mochenxin2025-png/obsidian-knowledge-bases/releases/latest/download/obsidian-knowledge-bases.7z)
+
+### Option 4: Hermes CLI
 
 ```bash
 hermes skills install video-to-obsidian
