@@ -4,7 +4,7 @@
 
 [![许可证: MIT](https://img.shields.io/badge/许可证-MIT-green.svg)](LICENSE)
 [![平台](https://img.shields.io/badge/平台-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)]()
-[![English](https://img.shields.io/badge/English-blue)](README_EN.md)
+[![English](https://img.shields.io/badge/English-blue)](README.md)
 
 ---
 
