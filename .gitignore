@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Models (downloaded at runtime)
+models/
+*.bin
+*.gguf
+
+# Temp files
+*.tmp
+*.wav
+temp_audio/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
