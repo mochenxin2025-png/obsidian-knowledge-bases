@@ -1,7 +1,7 @@
 ---
 name: video-to-obsidian
 description: "Use when the user wants to transcribe a video file into text and convert it into a structured Obsidian note. Covers the full pipeline: audio extraction, speech recognition, content extraction, and note generation."
-version: 2.0.0
+version: 2.1.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -19,6 +19,127 @@ Converts any video into a well-structured Obsidian note through a three-stage pi
 ```
 
 This skill is **agent-agnostic** — it documents the pipeline, not any specific agent's tools. See [Agent Setup](#agent-setup) for integration with your agent.
+
+## Complete Workflow
+
+The pipeline includes **pre-flight checks** and **post-pipeline synthesis** — not just transcription.
+
+### Step 0: Pre-Flight Check (Run Once Per Session)
+
+Before starting ANY video processing, verify the Obsidian environment:
+
+```
+0a. Check Obsidian installation
+    → Try: ls "$OBSIDIAN_VAULT_PATH" or check common paths
+    → If NOT installed:
+      → Ask user: "Obsidian not detected. Install from https://obsidian.md/?"
+      → If yes: help install (OS-specific instructions)
+      → Save answer to agent memory (do NOT ask again)
+
+0b. Check obsidian-skills plugin
+    → Check: <vault>/.obsidian/plugins/obsidian-skills/
+    → If missing:
+      → Install from: https://github.com/kepano/obsidian-skills
+      → Clone into vault's .obsidian/plugins/ directory
+      → No need to ask user — install silently
+```
+
+**Memory keys used:**
+- `obsidian_install_asked` → set to `true` after first ask
+- Only ask the user ONCE ever about installing Obsidian
+
+### Step 1: Resolve Vault Path (Run Every Pipeline)
+
+Before writing any note, resolve where to save:
+
+```
+1a. Check agent memory for saved vault path
+    → Key: "obsidian_vault_path"
+    → If found and path exists → use it
+
+1b. If no saved path OR path doesn't exist:
+    → Ask user: "您的Obsidian知识库保存在哪个目录？"
+    → Save answer to memory: obsidian_vault_path = <user's answer>
+    → Use this path for all future runs unless user changes it
+```
+
+### Step 2-5: Core Pipeline (Per Video)
+
+```
+Step 2: Download video (if URL) → Stage 1: FFmpeg audio extraction
+Step 3: Stage 2: GPU transcription (faster-whisper or whisper.cpp)
+Step 4: Stage 3: LLM extraction → write Obsidian note
+Step 5: Post-pipeline cleanup
+```
+
+### Step 5: Post-Pipeline Cleanup
+
+After the note is written:
+
+```
+5a. If video was DOWNLOADED (not a local file):
+    → Ask user: "转录完成。是否删除下载的视频文件？[保留/删除]"
+    → If delete: remove the .mp4 file from temp directory
+
+5b. Always delete the temporary WAV audio file (was extracted from video)
+
+5c. Increment pipeline completion counter in memory:
+    → Key: "pipeline_run_count"
+    → If counter >= 2: trigger Step 6
+```
+
+### Step 6: Cross-Note Synthesis (Conditional)
+
+When `pipeline_run_count >= 2` for the **same category** (e.g., 护肤知识, 理财认知):
+
+```
+6a. Ask user:
+    "您已在「{category}」分类下积累了 {count} 篇笔记。
+     是否需要我分析这些笔记的核心观点，创建一篇「观点串联」笔记？
+     内容包括：观点一致/不同/冲突的标注，以及 Obsidian 链接。"
+
+6b. If user says YES:
+    1. Read ALL notes in the target category
+    2. Extract core viewpoints from each note
+    3. Create a synthesis note with this structure:
+
+       ---
+       title: "{category}·观点串联——{date}"
+       tags: [观点串联, {category_tags}]
+       ---
+
+       # {category} · 观点串联
+
+       ## 涉及笔记
+       | # | 笔记 | 创作者 | 核心观点 |
+       |---|------|--------|----------|
+       | 1 | [[笔记1]] | @作者1 | 观点摘要 |
+       | 2 | [[笔记2]] | @作者2 | 观点摘要 |
+
+       ## 观点一致 ✅
+       - 笔记A 和 笔记B 在「某某观点」上一致
+       - ...
+
+       ## 观点不同 🔀
+       - 笔记A 认为 X，笔记B 认为 Y
+       - ...
+
+       ## 观点冲突 ⚡
+       - 笔记C 主张 X，笔记D 明确反对 X
+       - ...
+
+       ## 知识缺口 🕳️
+       - 该主题尚未覆盖的角度：...
+
+    4. Add [[wikilink]] from the synthesis note to EVERY source note
+    5. Add [[wikilink]] from each source note BACK to the synthesis note
+    6. Reset counter for that category
+
+6c. If user says NO:
+    → Skip, keep counter for next time
+```
+
+---
 
 ## Overview
 
@@ -284,9 +405,15 @@ For online video URLs (Douyin, Bilibili, etc.), the agent needs **browser automa
 4. **HuggingFace blocked (China):** Set `HF_ENDPOINT=https://hf-mirror.com` before running faster-whisper.
 5. **AMD Vulkan not found:** Install Vulkan SDK from [vulkan.lunarg.com](https://vulkan.lunarg.com).
 6. **Model not downloaded:** First run auto-downloads ~3 GB. Pre-download to `models/` for offline use.
+7. **Vault path not set:** If agent can't find vault, ask user explicitly. Save to memory.
+8. **obsidian-skills missing:** Install silently from GitHub — no need to ask user.
+9. **Synthesis noise:** Only synthesize when category has ≥2 notes with meaningful compare/contrast potential.
 
 ## Verification Checklist
 
+- [ ] **Step 0:** Obsidian installed (or user confirmed skip)
+- [ ] **Step 0:** obsidian-skills plugin present in vault
+- [ ] **Step 1:** Vault path saved to agent memory
 - [ ] `ffmpeg -version` succeeds
 - [ ] GPU driver installed (NVIDIA: `nvidia-smi`, AMD: `vulkaninfo`)
 - [ ] Transcription backend installed (faster-whisper or whisper.cpp)
@@ -294,3 +421,5 @@ For online video URLs (Douyin, Bilibili, etc.), the agent needs **browser automa
 - [ ] Transcript output is non-empty and in expected language
 - [ ] Generated note has valid YAML frontmatter
 - [ ] Note written to correct Obsidian vault subdirectory
+- [ ] **Step 5:** Temp WAV deleted; video cleanup offered
+- [ ] **Step 6:** (if count ≥ 2) Synthesis offered and completed or skipped

@@ -20,6 +20,13 @@ A three-stage pipeline that converts any video into a rich, structured Obsidian 
 - **Stage 2:** GPU-accelerated speech recognition (NVIDIA, AMD, or Apple)
 - **Stage 3:** LLM extracts titles, tags, chapters, and key insights → writes to Obsidian
 
+### Smart Workflow
+
+- 🔍 **Pre-flight check:** Auto-detects Obsidian + installs obsidian-skills plugin if missing
+- 📂 **Vault memory:** Remembers your vault path across sessions (ask once)
+- 🧹 **Auto cleanup:** Offers to delete downloaded video files after processing
+- 🔗 **Cross-note synthesis:** After 2+ notes in a category, auto-offers to create a "viewpoint map" connecting all related notes
+
 ## ⬇️ Download & Install
 
 ### Option 1: Clone via Git
